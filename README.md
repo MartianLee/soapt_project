@@ -9,22 +9,45 @@
 IDE : 서브라임
 
 # 라이브러리
+```
 pip install tweepy
 pip install bs4
-
+```
 
 
 # DB 생성
 스키마
 데이터베이스를 만듧니다.
-
+```
 mysql > create database tweet CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+```
 
 테이블을 생성합니다.
-
+```
 CREATE TABLE posts ( 
   id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  tweet_id bigint(40) unsigned NOT NULL,
   text varchar(250) NOT NULL,
   created datetime,
   PRIMARY KEY (id)
-);
+) DEFAULT CHARSET=utf8mb4;
+```
+
+# config 파일 생성
+
+config 파일을 생성하고 다음 정보를 입력합니다.
+
+```
+mysql:
+    host: 호스트 이름
+    user: 유저 이름
+    passwd: 패스워드
+    db: 디비명
+twitter:
+    consumer_key : ###
+    consumer_secret : ###
+    access_token : ###
+    access_token_secret : ###
+```
+
+

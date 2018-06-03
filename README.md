@@ -12,7 +12,13 @@ IDE : 서브라임
 ```
 pip install tweepy
 pip install bs4
+pip install pyyaml
+pip install pymysql
+pip install konlpy
 ```
+
+konlpy 설치 방법은 [링크](http://konlpy.org/en/v0.4.4/)
+
 
 
 # DB 생성
@@ -27,7 +33,7 @@ mysql > create database tweet CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 CREATE TABLE posts ( 
   id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   tweet_id bigint(40) unsigned NOT NULL,
-  text varchar(250) NOT NULL,
+  text varchar(400) NOT NULL,
   created datetime,
   PRIMARY KEY (id)
 ) DEFAULT CHARSET=utf8mb4;

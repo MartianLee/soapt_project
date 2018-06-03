@@ -34,8 +34,10 @@ auth.set_access_token(access_token, access_token_secret)
 # twitter API 생성
 api = tweepy.API(auth)
 
-location = "%s,%s,%s" % ("35.95", "128.25", "1000km")                   # 검색기준(대한민국 중심) 좌표, 반지름
-keyword = "감성 OR 새벽 OR 일기 -filter:retweets"                           # OR 로 검색어 묶어줌, 검색어 5개(반드시 OR 대문자로)
+#location = "%s,%s,%s" % ("35.95", "128.25", "1000km")                   # 검색기준(대한민국 중심) 좌표, 반지름
+location = "%s,%s,%s" % ("36.62", "127.93", "250km")
+#keyword = "감성 OR 새벽 OR 일기-filter:retweets"                        # OR 로 검색어 묶어줌, 검색어 5개(반드시 OR 대문자로)
+keyword = " -filter:retweets"
 wfile = open(os.getcwd()+"/twitter2.txt", mode='w', encoding='utf8')    # 쓰기 모드
 
 array = []
@@ -45,7 +47,7 @@ numberOfItems = 100
 
 try:
   # api 생성
-  cursor = tweepy.Cursor(api.search, q=keyword, since='2017-01-01',count=100, geocode=location, include_entities=True)
+  cursor = tweepy.Cursor(api.search, q=keyword, lang="ko", since='2017-01-01', count=100, geocode=location, include_entities=True)
   sql = 'INSERT INTO posts (tweet_id, text, created) VALUES (%s, %s, %s)'
 
   for i, tweet in enumerate(cursor.items(numberOfItems)):

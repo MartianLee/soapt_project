@@ -37,8 +37,9 @@ for row in cur.fetchall():
   result = twitter.pos(row[2])
   tmp = []
   for word, tag in result:
-    corpus.write("{}/{}".format(word, tag))
-    tmp.append("{}/{}".format(word, tag))
+    if tag not in ['URL', 'Hashtag', 'ScreenName']:
+      corpus.write("{}/{}".format(word, tag))
+      tmp.append("{}/{}".format(word, tag))
   print(tmp)
   corpus.write('\n')
   arr.append(tmp)
@@ -62,8 +63,7 @@ config = {
 model = gensim.models.Word2Vec(sentences_vocab, **config)
 
 #model.save('model')
-res = model.most_similar(positive=["슬픔/NNG"], topn=20)
+res = model.most_similar(positive=["슬픔/Noun"], topn=20)
 print(res)
-res = model.similarity("슬픔/NNG","슬프/VA")
-print(res)
-
+#res = model.similarity("슬픔/NNG","슬프/VA")
+#print(res)

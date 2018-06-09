@@ -32,36 +32,37 @@ access_token_secret = cfg['twitter']['access_token_secret']
 auth.set_access_token(access_token, access_token_secret)
 
 # twitter API 생성
-api = tweepy.API(auth)
+api = tweepy.API(auth, wait_on_rate_limit = True, wait_on_rate_limit_notify = True)
 
 #location = "%s,%s,%s" % ("35.95", "128.25", "1000km")                   # 검색기준(대한민국 중심) 좌표, 반지름
 location = "%s,%s,%s" % ("36.62", "127.93", "250km")
-#keyword = "감성 OR 새벽 OR 일기-filter:retweets"                        # OR 로 검색어 묶어줌, 검색어 5개(반드시 OR 대문자로)
-keyword = " -filter:retweets"
+keyword = " -filter:links -filter:retweets -@ -수면제 -졸피뎀 -졸피댐 -미프진 -물뽕 -요힘빈 -흥분제 -디엠 -안마 -룸싸롱 -놀이터 -포카 -팝니다 -사다리 -직거래 -토토 -오피 -대출 -하드코어 -접대 -간증 -텔레 -워커 -카톡 -오프 -op -바둑이 -카카오톡 -tel -"                        # OR 로 검색어 묶어줌, 검색어 5개(반드시 OR 대문자로)
+#keyword = " -filter:retweets"
 wfile = open(os.getcwd()+"/twitter2.txt", mode='w', encoding='utf8')    # 쓰기 모드
 
 array = []
-numberOfItems = 100
+numberOfItems = 1000
+loop_count = 0
 
 # 트위터에서 크롤링
-
 try:
-  # api 생성
-  cursor = tweepy.Cursor(api.search, q=keyword, lang="ko", since='2017-01-01', count=100, geocode=location, include_entities=True)
+  cursor = tweepy.Cursor(api.search, q=keyword, lang="ko", since='2017-01-01', geocode=location, include_entities=True)
   sql = 'INSERT INTO posts (tweet_id, text, created) VALUES (%s, %s, %s)'
 
-  for i, tweet in enumerate(cursor.items(numberOfItems)):
-      # 읽으면서 출력
-      # print("{}: {}, {}".format(i, tweet.text, tweet.created_at))
-      db.cursor().execute(sql, (tweet.id, tweet.text, tweet.created_at))
-      wfile.write(tweet.text)
-  db.commit()
-
-  # 크롤링 결과 출력
-  cur.execute("SELECT * FROM posts")
-  for row in cur.fetchall():
-    print(row[2])
-
+  for i, tweet in enumerate(cursor.items(loop_count)):
+    if loop_count >= numberOfItems:
+      break;
+    # 읽으면서 출력
+    #print("{}: {}, {}".format(i, tweet.text, tweet.created_at))
+    if 'https' in tweet.text or '@' in tweet.text:
+      continue
+    db.cursor().execute(sql, (tweet.id, tweet.text, tweet.created_at))
+    wfile.write(tweet.text)
+    wfile.write('\n')
+    wfile.write('-------------------------------------------------')
+    wfile.write('\n')
+    loop_count += 1
+    db.commit()
 finally:
   db.close()
 

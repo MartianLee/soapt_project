@@ -8,9 +8,11 @@ import datetime
 #from konlpy.tag import Kkma
 #from konlpy.utils import pprint
 from konlpy.tag import Twitter
+from konlpy.tag import Hannanum
 
 #kkma = Kkma()
 twitter = Twitter()
+hannanum = Hannanum()
 
 #konlpy 사용방법
 #pprint(kkma.sentences(u'네, 안녕하세요. 반갑습니다.'))
@@ -36,7 +38,7 @@ sqlDrop = "DROP TABLE IF EXISTS analyzed;"
 cur.execute(sqlDrop)
 
 # 분석용 DB를 생성한다.
-sqlCreate = "CREATE TABLE analyzed ( id bigint(20) unsigned NOT NULL AUTO_INCREMENT, tweet_id bigint(40) unsigned NOT NULL, morph VARCHAR(100), class VARCHAR(20), PRIMARY KEY (id) )  DEFAULT CHARSET=utf8mb4;"
+sqlCreate = "CREATE TABLE analyzed ( id bigint(20) unsigned NOT NULL AUTO_INCREMENT, tweet_id bigint(40) unsigned NOT NULL, morph VARCHAR(300), class VARCHAR(20), PRIMARY KEY (id) )  DEFAULT CHARSET=utf8mb4;"
 cur.execute(sqlCreate)
 
 cur.execute("SELECT * FROM posts")

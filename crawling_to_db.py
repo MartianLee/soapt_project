@@ -40,28 +40,20 @@ keyword = " -filter:links -filter:retweets -뎀 -멘션 -팔로 -추천인 -양�
 wfile = open(os.getcwd()+"/twitter2.txt", mode='w', encoding='utf8')    # 쓰기 모드
 
 array = []
-numberOfItems = 300000  # 검색횟수 입력
+numberOfItems = 30000  # 검색횟수 입력
 loop_count = 0
 
-cursor = tweepy.Cursor(api.search, q=keyword, lang="ko", since='2017-01-01', geocode=location, include_entities=True)
+cursor = tweepy.Cursor(api.search, q=keyword, lang="ko", since='2017-01-01', count=numberOfItems, geocode=location, include_entities=True)
 sql = 'INSERT INTO posts (tweet_id, text, created) VALUES (%s, %s, %s)'
 
 # 트위터에서 크롤링
 try:
-  for i, tweet in enumerate(cursor.items()):
-    if loop_count >= numberOfItems:
-      break;
+  for i, tweet in enumerate(cursor.items(numberOfItems)):
     if 'https' in tweet.text or 'com' in tweet.text or '@' in tweet.text or '&' in tweet.text or 'domain' in tweet.text:
       continue
     db.cursor().execute(sql, (tweet.id, tweet.text, tweet.created_at))
     wfile.write(tweet.text)
-    wfile.write('\n')
-    wfile.write('-------------------------------------------------')
-    wfile.write('\n')
-    loop_count += 1
   db.commit()
-except tweepy.RateLimitError:
-  time.sleep(15 * 60)
 finally:
   db.close()
 

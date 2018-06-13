@@ -40,7 +40,7 @@ keyword = " -filter:links -filter:retweets -뎀 -멘션 -팔로 -추천인 -양�
 wfile = open(os.getcwd()+"/twitter2.txt", mode='w', encoding='utf8')    # 쓰기 모드
 
 array = []
-numberOfItems = 1000  # 검색횟수 입력
+numberOfItems = 300000  # 검색횟수 입력
 loop_count = 0
 
 cursor = tweepy.Cursor(api.search, q=keyword, lang="ko", since='2017-01-01', geocode=location, include_entities=True)
@@ -48,7 +48,7 @@ sql = 'INSERT INTO posts (tweet_id, text, created) VALUES (%s, %s, %s)'
 
 # 트위터에서 크롤링
 try:
-  for i, tweet in enumerate(cursor.items(loop_count)):
+  for i, tweet in enumerate(cursor.items()):
     if loop_count >= numberOfItems:
       break;
     if 'https' in tweet.text or 'com' in tweet.text or '@' in tweet.text or '&' in tweet.text or 'domain' in tweet.text:

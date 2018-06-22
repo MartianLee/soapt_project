@@ -30,20 +30,21 @@ cur = db.cursor()
 tagger = Twitter()
 corpus = codecs.open('corpus.txt', 'w', encoding='utf-8')
 
-arr = []
+arrayOfAnalyzedSentence = []
+arrayOfId = []
 setOfMorph = set()
 
 cur.execute("SELECT * FROM analyzed order by tweet_id")
 resultAnalyzed = cur.fetchall()
 tmp = []
 tweet_id = resultAnalyzed[0][1]
-print(tweet_id)
 
 for val in resultAnalyzed:
   # 트위터 라이브러리를 사용해 텍스트를 분석한다.
   #cur.execute("SELECT * FROM analyzed where tweet_id = " + str(row[0]))
   if tweet_id != val[1] :
-    arr.append(tmp)
+    arrayOfAnalyzedSentence.append(tmp)
+    arrayOfId.append(tweet_id)
     tweet_id = val[1]
     tmp = []
   morph = "{}/{}".format(val[2], val[3])
@@ -117,11 +118,10 @@ print("- 스케일링 완료")
 
 number = 0
 
-for row in arr:
+for row in arrayOfAnalyzedSentence:
   sumOfFeeling = count = 0
-  number+=1
   if number % 1000 == 0:
-    print(number)
+    print(str(number) + "개 문장 분석 완료")
   temp = []
   for morph in row:
     val = 0
@@ -138,11 +138,13 @@ for row in arr:
     temp.append(avrg)
     temp.append(sumOfFeeling)
     temp.append(count)
+    temp.append(arrayOfId[number])
     res.append(temp)
     #print(temp)
   else:
     print(row[2] + " has no meaning")
   # db.cursor().execute(sqlInsert, (row[1], morph[0], morph[1]))
+  number+=1
 
 db.commit();
 
@@ -152,8 +154,20 @@ sorted_res = sorted(res, key=lambda res : res[2])[::-1]
 
 print("- 모든 문장의 점수화 완료")
 
+resultFile = codecs.open('result.txt', 'w', encoding='utf-8')
+
+
+sqlSearch = 'SELECT * FROM posts where tweet_id = %s'
+
+print("- 상위 20개 문장 출력")
+
 for row in sorted_res[0:20]:
   print(row)
+  cur.execute(sqlSearch, (row[4]))
+  searchSentence = cur.fetchall()
+  resultFile.write(searchSentence[0][2] + '\n')
+  resultFile.write('점수 : ' + str(row[2]) + '\n')
+
 
 sentence = "졸라 짱 슬퍼 인생 망함ㅠㅠ"
 result = twitter.pos(sentence)
@@ -195,3 +209,5 @@ print("등수 : " + str(rank))
 print("슬픔 정도 : " + (str(100 - int(rank / len(sorted_res) * 100))))
 
 print("- 상위 몇%인지 출력 완료")
+
+resultFile.close()

@@ -155,15 +155,16 @@ print("- 모든 문장의 점수화 완료")
 for row in sorted_res[0:20]:
   print(row)
 
-sentence = "전라북도는 민주당 송하진 후보가 75.0%로 당선 예상된 가운데 민주평화당 임정엽 후보 17.8%, 정의당 권태홍 후보 4.2%, 한국당 신재봉 후보 1.5%, 민중당 이광석 후보 1.4%를 각각 기록했다."
+sentence = "졸라 짱 슬퍼 인생 망함ㅠㅠ"
 result = twitter.pos(sentence)
 valueOfSentence = 0
+sumOfFeeling = 0
 
 for word, tag in result:
   morph = "{}/{}".format(word, tag)
   val = 0
   try:
-    val = model.similarity("슬픔/Noun",morph)
+    val = similarity_dictionary[morph][0]
   except:
     continue
   finally:
@@ -187,6 +188,8 @@ for row in sorted_res:
     break
 
 print(sentence)
+print("점수" + str(valueOfSentence))
+print("평균" + str(valueOfSentence / len(result)) )
 print("총 문장 갯수 :" + str(len(sorted_res)))
 print("등수 : " + str(rank))
 print("슬픔 정도 : " + (str(100 - int(rank / len(sorted_res) * 100))))

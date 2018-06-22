@@ -26,11 +26,12 @@ konlpy 설치 방법은 [링크](http://konlpy.org/en/v0.4.4/)
 데이터베이스를 만듧니다.
 ```
 mysql > create database tweet CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+mysql > use tweet;
 ```
 
 테이블을 생성합니다.
 ```
-CREATE TABLE posts ( 
+mysql > CREATE TABLE posts ( 
   id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   tweet_id bigint(40) unsigned NOT NULL,
   text varchar(400) NOT NULL,
@@ -55,5 +56,33 @@ twitter:
     access_token : ###
     access_token_secret : ###
 ```
+
+트위터 어플리케이션을 생성해 key를 받아와서 입력해 주어야 합니다.
+
+
+# 트위터에서 크롤링 해오기
+
+```
+python3 crawling_to_db.py
+```
+
+앞서 posts table을 create하고 crawling_to_db.py를 실행시키면, 원하는 만큼 트윗을 긁어 옵니다. 목표에 따라서 시간이 아주 오래 걸릴 수 있습니다.
+
+# 형태소 분석하기
+
+```
+python3 testing_konlpy.py
+```
+
+analyzed 테이블에 형태소를 분석한 결과를 넣습니다.
+
+# 각 문장과 감정의 관계 분석 및 점수화
+
+```
+python3 nlp_ml_analysis.py
+```
+
+sentiment 테이블에 분석 결과를 넣습니다.
+
 
 

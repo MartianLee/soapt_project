@@ -7,14 +7,6 @@ import pymysql
 import datetime
 import codecs
 
-from konlpy.tag import Twitter
-from konlpy.tag import Kkma
-from konlpy.tag import Hannanum
-
-twitter = Twitter()
-kkma = Kkma()
-hannanum = Hannanum()
-
 # config 파일 불러옴
 with open("config.yml", 'r') as ymlfile:
   cfg = yaml.load(ymlfile)
@@ -27,31 +19,32 @@ db = pymysql.connect(host = cfg['mysql']['host'],       # 호스트
                      charset = 'utf8mb4')               # utf-8
 cur = db.cursor()
 
-tagger = Twitter()
 corpus = codecs.open('corpus.txt', 'w', encoding='utf-8')
 
-arrayOfAnalyzedSentence = []
-arrayOfId = []
-setOfMorph = set()
+array_of_analyzed_sentence = []
+array_of_id = []
+set_of_morph = set()
 
 cur.execute("SELECT * FROM analyzed order by tweet_id")
-resultAnalyzed = cur.fetchall()
-tmp = []
-tweet_id = resultAnalyzed[0][1]
+result_analyzed = cur.fetchall()
+temp_array_of_morph = []
+tweet_id = result_analyzed[0][1]
 
-for val in resultAnalyzed:
+for val in result_analyzed:
   # 트위터 라이브러리를 사용해 텍스트를 분석한다.
   #cur.execute("SELECT * FROM analyzed where tweet_id = " + str(row[0]))
   if tweet_id != val[1] :
-    arrayOfAnalyzedSentence.append(tmp)
-    arrayOfId.append(tweet_id)
+    array_of_analyzed_sentence.append(temp_array_of_morph)
+    array_of_id.append(tweet_id)
     tweet_id = val[1]
-    tmp = []
+    temp_array_of_morph = []
   morph = "{}/{}".format(val[2], val[3])
-  tmp.append(morph)
+  temp_array_of_morph.append(morph)
+  if val[2] == "놀라움":
+    print(morph)
   # if morph == "슬픔/Noun" or morph == "놀라움/Noun" or morph == "/Noun" or morph == "분노/Noun" or morph == "호기심/Noun"  :
   #   print(morph)
-  setOfMorph.add(morph)
+  set_of_morph.add(morph)
 
 print("- 형태소 분석 완료")
 
@@ -71,34 +64,33 @@ import numpy as np
 
 cur.execute("SELECT * FROM posts")
 
-res = []
-listOfMorph = list(setOfMorph)
+list_of_morph = list(set_of_morph)
 similarity_dictionary = {}
 similarity_array = []
+sentiments = ["기쁘/VA","슬프/VA","화나/VV","즐겁/VA","무섭/VA"]
 
-for morph in listOfMorph:
-  tmp = []
-  val = 0
-  val2 = 0
-  try:
-    val = model.similarity("슬픔/Noun",morph)
-    val2 = model.similarity("분노/Noun",morph)
-  except:
-    val = 0
-  finally:
-    tmp.append(val)
-    tmp.append(val2)
-  similarity_dictionary[morph] = tmp
-  similarity_array.append(tmp)
+for morph in list_of_morph:
+  similarity_of_sentiment = []
+  #print(morph)
+  for sentiment in sentiments:
+    try:
+      val = model.similarity(sentiment,morph)
+    except:
+      val = 0
+    finally:
+      #print(sentiment, val)
+      similarity_of_sentiment.append(val)
+  similarity_dictionary[morph] = similarity_of_sentiment
+  similarity_array.append(similarity_of_sentiment)
 
 similarity_array = np.array(similarity_array)
-min_max_scaler = preprocessing.RobustScaler()
+min_max_scaler = preprocessing.MinMaxScaler()
 scaled_similarity_array = min_max_scaler.fit_transform(similarity_array)
 cnt = 0
 
 cnt = 0
 for row in scaled_similarity_array:
-  similarity_dictionary[listOfMorph[cnt]] = row
+  similarity_dictionary[list_of_morph[cnt]] = row
   cnt+=1
 
 
@@ -116,98 +108,122 @@ print("- 스케일링 완료")
 
 # sqlInsert = 'INSERT INTO sentiment (tweet_id, morph, feeling, val) VALUES (%s, %s, %s, %s, %s)'
 
-number = 0
+result_of_analysis = []
 
-for row in arrayOfAnalyzedSentence:
-  sumOfFeeling = count = 0
-  if number % 1000 == 0:
-    print(str(number) + "개 문장 분석 완료")
-  temp = []
-  for morph in row:
-    val = 0
-    try:
-      val = similarity_dictionary[morph][0]
-    except:
-      continue
-    finally:
-      sumOfFeeling = sumOfFeeling + float(val)
+for index_of_sentiment in range(len(sentiments)):
+  array_of_analyzed_sentiments = []
+  number = 0
+  total_avrg = 0
+  for row in array_of_analyzed_sentence:
+    if number % 5000 == 0:
+      print(str(number) + "개 문장 분석 완료")
+    analyzed_sentence = []
+    sum_of_feeling = count = 0
+    for morph in row:
+      val = similarity_dictionary[morph][index_of_sentiment]
+      sum_of_feeling = sum_of_feeling + float(val)
       count+=1
-  if count > 0:
-    avrg = sumOfFeeling / float(count)
-    temp.append(row)
-    temp.append(avrg)
-    temp.append(sumOfFeeling)
-    temp.append(count)
-    temp.append(arrayOfId[number])
-    res.append(temp)
-    #print(temp)
-  else:
-    print(row[2] + " has no meaning")
+    if count > 4:
+      avrg = sum_of_feeling / float(count)
+      analyzed_sentence.append(row)
+      analyzed_sentence.append(avrg)
+      analyzed_sentence.append(sum_of_feeling)
+      analyzed_sentence.append(count)
+      analyzed_sentence.append(array_of_id[number])
+      array_of_analyzed_sentiments.append(analyzed_sentence)
+      total_avrg += avrg
+      #print(analyzed_sentence)
+    #else:
+      #print(row, " has no meaning")
+    number+=1
+  print(sentiments[index_of_sentiment], total_avrg / len(array_of_analyzed_sentence))
+  result_of_analysis.append(array_of_analyzed_sentiments)
   # db.cursor().execute(sqlInsert, (row[1], morph[0], morph[1]))
-  number+=1
 
 db.commit();
 
-print(res[0])
-
-sorted_res = sorted(res, key=lambda res : res[2])[::-1]
+# res의 2번째 column 기준(2번 : sumfOfFeeling)으로 sort
+sorted_result = []
+for list_of_results in result_of_analysis:
+  sorted_result_of_analysis = sorted(list_of_results, key=lambda list_of_results : list_of_results[1])[::-1]
+  sorted_result.append(sorted_result_of_analysis)
 
 print("- 모든 문장의 점수화 완료")
 
-resultFile = codecs.open('result.txt', 'w', encoding='utf-8')
+result_file = codecs.open('result.txt', 'w', encoding='utf-8')
 
 
 sqlSearch = 'SELECT * FROM posts where tweet_id = %s'
 
-print("- 상위 20개 문장 출력")
+print("- 상위 10개 문장 출력")
 
-for row in sorted_res[0:20]:
-  print(row)
-  cur.execute(sqlSearch, (row[4]))
-  searchSentence = cur.fetchall()
-  resultFile.write(searchSentence[0][2] + '\n')
-  resultFile.write('점수 : ' + str(row[2]) + '\n')
+index = 0
+
+for sorted_result_of_sentiment in sorted_result:
+  print(sentiments[index])
+  result_file.write(sentiments[index] + '\n')
+  index += 1
+  for row in sorted_result_of_sentiment[0:10]:
+    print(row)
+    cur.execute(sqlSearch, (row[4]))
+    search_sentence = cur.fetchall()
+    result_file.write(search_sentence[0][2] + '\n')
+    result_file.write('점수 : ' + str(row[1]) + '\n')
 
 
-sentence = "졸라 짱 슬퍼 인생 망함ㅠㅠ"
-result = twitter.pos(sentence)
-valueOfSentence = 0
-sumOfFeeling = 0
+from konlpy.tag import Twitter
+from konlpy.tag import Kkma
+from konlpy.tag import Hannanum
+from konlpy.tag import Komoran
 
-for word, tag in result:
-  morph = "{}/{}".format(word, tag)
-  val = 0
-  try:
-    val = similarity_dictionary[morph][0]
-  except:
-    continue
-  finally:
-    print(morph, val)
-    sumOfFeeling += val
-    count+=1
+twitter = Twitter()
+kkma = Kkma()
+hannanum = Hannanum()
+komoran = Komoran()
 
-if count > 0:
-  avrg = sumOfFeeling / float(count)
-  print(sumOfFeeling)
-  valueOfSentence = sumOfFeeling
-else:
-  print(row[2] + " has no meaning")
+
+sentence = "졸라 짱 슬퍼 인생 망함ㅠㅠ 날 왜 이렇게 힘들게 하는지 빨리 학기 끝나면 좋겠다ㅠㅠ 맛있는거 먹고시퍼ㅠㅠ"
+result = komoran.pos(sentence)
+print("문장 :", sentence)
+print(result)
+
+for index_of_sentiment in range(len(sentiments)):
+  value_of_sentence = 0
+  sum_of_feeling = 0
+  count = 0
+
+  for word, tag in result:
+    morph = "{}/{}".format(word, tag)
+    val = 0
+    try:
+      val = similarity_dictionary[morph][index_of_sentiment]
+    except:
+      count-=1
+      continue
+    finally:
+      count+=1
+      sum_of_feeling += val
+
+  if count > 0:
+    avrg = sum_of_feeling / float(count)
+    value_of_sentence = avrg
+  else:
+    print(row, " has no meaning")
+
+  print(sentiments[index_of_sentiment], " 감정 분석")
+  print("형태소 점수 합계 :", sum_of_feeling)
+  print("형태소 점수 평균 :", avrg)
+  print("총 문장 갯수 :", len(sorted_result[index_of_sentiment]))
+  rank = 0
+  for row in sorted_result[index_of_sentiment]:
+    rank+=1
+    if row[1] < value_of_sentence:
+      print("등수 : " , rank)
+      break
+  print(sentiments[index_of_sentiment], "백분율 :",(100 - int(rank / len(sorted_result[index_of_sentiment]) * 100)))
 
 print("- 임의의 문장의 점수화 완료")
 
-rank = 0
-for row in sorted_res:
-  rank+=1
-  if row[2] < valueOfSentence:
-    break
-
-print(sentence)
-print("점수" + str(valueOfSentence))
-print("평균" + str(valueOfSentence / len(result)) )
-print("총 문장 갯수 :" + str(len(sorted_res)))
-print("등수 : " + str(rank))
-print("슬픔 정도 : " + (str(100 - int(rank / len(sorted_res) * 100))))
-
 print("- 상위 몇%인지 출력 완료")
 
-resultFile.close()
+result_file.close()

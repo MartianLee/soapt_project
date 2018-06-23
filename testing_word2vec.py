@@ -45,7 +45,7 @@ for row in cur.fetchall():
   #print(tmp)
   number += 1
   if number % 10000 == 0:
-    print(number, "번째 문장를 입력하였습니다.", morph)
+    print(number, "번째 문장를 입력하였습니다.", row[2])
   corpus.write('\n')
   arr.append(tmp)
 

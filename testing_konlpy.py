@@ -9,10 +9,13 @@ import datetime
 #from konlpy.utils import pprint
 from konlpy.tag import Twitter
 from konlpy.tag import Hannanum
+from konlpy.tag import Komoran
 
 #kkma = Kkma()
 twitter = Twitter()
 hannanum = Hannanum()
+komoran = Komoran()
+
 
 #konlpy 사용방법
 #pprint(kkma.sentences(u'네, 안녕하세요. 반갑습니다.'))
@@ -45,11 +48,15 @@ cur.execute("SELECT * FROM posts")
 
 sqlInsert = 'INSERT INTO analyzed (tweet_id, morph, class) VALUES (%s, %s, %s)'
 
+number = 0
+
 for row in cur.fetchall():
   # 트위터 라이브러리를 사용해 텍스트를 분석한다.
-  result = twitter.pos(row[2])
+  result = komoran.pos(row[2]) # text 컬럼
   for morph in result:
-    print(morph)
+    number += 1
+    if number % 10000 == 0:
+      print(number, "번째 형태소를 분석하였습니다.", morph)
     db.cursor().execute(sqlInsert, (row[1], morph[0], morph[1]))
 
 db.commit();

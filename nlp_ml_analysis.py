@@ -212,7 +212,7 @@ kkma = Kkma()
 hannanum = Hannanum()
 komoran = Komoran()
 
-sqlSearchTimeline = 'SELECT * from user_text'
+sqlSearchTimeline = 'SELECT * from user_tweets'
 cur.execute(sqlSearchTimeline)
 timeline = cur.fetchall()
 sentence = []
@@ -235,7 +235,7 @@ for content in timeline:
   #print("문장 :", sentence)
   #print(result[i])
   i += 1
-  
+
 '''
 sentence = "★마비노기 14주년 기념 축제★ 매주 그리운 NPC와 함께 상상여행을 떠나고, 돌아온 악동 4인방을 도와 축제를 꾸며주세요. 다양한 14주년 이벤트에 참여하면 역대급으로 쏟아지는 푸짐한 선물까지! #마비노기_14주년"
 result = komoran.pos(sentence)
@@ -273,12 +273,12 @@ for twit in result:
         else:
           print(row, " has no meaning")
         array_of_result_by_sentiment = []
-  
+
         #print(sentiments[index_of_sentiment], " 감정 분석")
         #print("형태소 점수 합계 :", sum_of_feeling)
         #print("형태소 점수 평균 :", avrg)
         #print("총 문장 갯수 :", len(sorted_result[index_of_sentiment]))
-  
+
         rank = 0
         for row in sorted_result[index_of_sentiment]:
           rank+=1
@@ -288,7 +288,7 @@ for twit in result:
         #print(sentiments[index_of_sentiment], "백분율 :",(100 - int(rank / len(sorted_result[index_of_sentiment]) * 100)))
         rank = 0
 
-  
+
     if count > 0:
       avrg = sum_of_feeling / float(count)
       value_of_sentence = avrg
@@ -300,7 +300,7 @@ for twit in result:
     print("형태소 점수 합계 :", sum_of_feeling)
     print("형태소 점수 평균 :", avrg)
     print("총 문장 갯수 :", len(sorted_result[index_of_sentiment]))
-  
+
     rank = 0
     for row in sorted_result[index_of_sentiment]:
       rank+=1
@@ -325,55 +325,3 @@ for twit in result:
   db.cursor().execute(sqlInsert, (twit_id[i], user_timeline[i], sent1, sent2, sent3, sent4, sent5, datetime.datetime.now(), datetime.datetime.now()))
   db.commit()
   i += 1
-
-array_of_result = []
-
-for index_of_sentiment in range(len(sentiments)):
-  value_of_sentence = 0
-  sum_of_feeling = 0
-  count = 0
-
-  for word, tag in result:
-    morph = "{}/{}".format(word, tag)
-    val = 0
-    try:
-      val = similarity_dictionary[morph][index_of_sentiment]
-    except:
-      count-=1
-      continue
-    finally:
-      count+=1
-      sum_of_feeling += val
-      print(morph, val)
-
-  if count > 0:
-    avrg = sum_of_feeling / float(count)
-    value_of_sentence = avrg
-  else:
-    print(row, " has no meaning")
-  array_of_result_by_sentiment = []
-  print(sentiments[index_of_sentiment], " 감정 분석")
-  print("형태소 점수 합계 :", sum_of_feeling)
-  print("형태소 점수 평균 :", avrg)
-  print("총 문장 갯수 :", len(sorted_result[index_of_sentiment]))
-  rank = 0
-  for row in sorted_result[index_of_sentiment]:
-    rank+=1
-    if row[1] < value_of_sentence:
-      print("등수 : " , rank)
-      break
-  print(sentiments[index_of_sentiment], "백분율 :",(100 - int(rank / len(sorted_result[index_of_sentiment]) * 100)))
-  rank = 0
-  # for row in sorted_result[index_of_sentiment]:
-  #   rank+=1
-  #   if rank % 10000 == 0:
-  #     print(rank, row[0], row[1], row[2], row[3])
-
-db.cursor().execute(sqlInsert, (123123, sentence, morph[1]))
-
-db.commit();
-
-
-print("- 임의의 문장의 점수화 완료")
-
-print("- 상위 몇%인지 출력 완료")

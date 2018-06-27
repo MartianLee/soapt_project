@@ -43,7 +43,8 @@ array = []
 numberOfItems = 100000  # 검색횟수 입력
 count = 0
 
-cursor = tweepy.Cursor(api.search, q=keyword, lang="ko", until='2018-06-21', count=numberOfItems, geocode=location, include_entities=True)
+cursor = tweepy.Cursor(api.search, q=keyword, lang="ko", until='2018-06-25', count=numberOfItems, geocode=location, include_entities=True)
+
 sql = 'INSERT INTO posts (tweet_id, text, created) VALUES (%s, %s, %s)'
 
 # 트위터에서 크롤링

@@ -1,1 +1,0 @@
-select morph, count(morph) from analyzed group by morph order by count(morph);

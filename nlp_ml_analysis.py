@@ -134,7 +134,7 @@ for index_of_sentiment in range(len(sentiments)):
     #else:
       #print(row, " has no meaning")
     number+=1
-  print(sentiments[index_of_sentiment], total_avrg / len(array_of_analyzed_sentence))
+  #print(sentiments[index_of_sentiment], total_avrg / len(array_of_analyzed_sentence))
   result_of_analysis.append(array_of_analyzed_sentiments)
   # db.cursor().execute(sqlInsert, (row[1], morph[0], morph[1]))
 
@@ -166,7 +166,7 @@ for list_of_results in result_of_analysis:
   plt.ylabel("출현 빈도")
   plt.axis([0, 1, 0, 3000])
   #######################plt.show()
-  fig = plt.gcf()
+  # fig = plt.gcf()
   count += 1
 
 
@@ -247,7 +247,7 @@ print(result)
 i = 0
 for twit in result:
   #print(twit)
-  print(user_timeline[i])
+  #print(user_timeline[i])
   for index_of_sentiment in range(len(sentiments)):
     value_of_sentence = 0
     sum_of_feeling = 0
@@ -297,9 +297,9 @@ for twit in result:
     array_of_result_by_sentiment = []
 
     print(sentiments[index_of_sentiment], " 감정 분석")
-    print("형태소 점수 합계 :", sum_of_feeling)
+    #print("형태소 점수 합계 :", sum_of_feeling)
     print("형태소 점수 평균 :", avrg)
-    print("총 문장 갯수 :", len(sorted_result[index_of_sentiment]))
+    #print("총 문장 갯수 :", len(sorted_result[index_of_sentiment]))
 
     rank = 0
     for row in sorted_result[index_of_sentiment]:

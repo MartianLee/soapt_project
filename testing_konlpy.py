@@ -5,13 +5,10 @@ import yaml
 import pymysql
 import datetime
 
-#from konlpy.tag import Kkma
-#from konlpy.utils import pprint
 from konlpy.tag import Twitter
 from konlpy.tag import Hannanum
 from konlpy.tag import Komoran
 
-#kkma = Kkma()
 twitter = Twitter()
 hannanum = Hannanum()
 komoran = Komoran()
@@ -24,7 +21,7 @@ komoran = Komoran()
 #result = twitter.pos(u'오류보고는 실행환경, 에러메세지와함께 설명을 최대한상세히!^^')
 
 # config 파일 불러옴
-with open("config.yml", 'r') as ymlfile:
+with open('config.yml', 'r') as ymlfile:
   cfg = yaml.load(ymlfile)
 
 # 디비 연결
@@ -37,14 +34,14 @@ db = pymysql.connect(host = cfg['mysql']['host'],       # 호스트
 cur = db.cursor()
 
 # 이전에 DB가 있으면 제거한다.
-sqlDrop = "DROP TABLE IF EXISTS analyzed;"
+sqlDrop = 'DROP TABLE IF EXISTS analyzed;'
 cur.execute(sqlDrop)
 
 # 분석용 DB를 생성한다.
-sqlCreate = "CREATE TABLE analyzed ( id bigint(20) unsigned NOT NULL AUTO_INCREMENT, tweet_id bigint(40) unsigned NOT NULL, morph VARCHAR(300), class VARCHAR(20), PRIMARY KEY (id) )  DEFAULT CHARSET=utf8mb4;"
+sqlCreate = 'CREATE TABLE analyzed ( id bigint(20) unsigned NOT NULL AUTO_INCREMENT, tweet_id bigint(40) unsigned NOT NULL, morph VARCHAR(300), class VARCHAR(20), PRIMARY KEY (id))  DEFAULT CHARSET = utf8mb4;'
 cur.execute(sqlCreate)
 
-cur.execute("SELECT * FROM posts")
+cur.execute('SELECT * FROM posts')
 
 sqlInsert = 'INSERT INTO analyzed (tweet_id, morph, class) VALUES (%s, %s, %s)'
 
@@ -56,7 +53,7 @@ for row in cur.fetchall():
   for morph in result:
     number += 1
     if number % 10000 == 0:
-      print(number, "번째 형태소를 분석하였습니다.", morph)
+      print(number, '번째 형태소를 분석하였습니다.', morph)
     db.cursor().execute(sqlInsert, (row[1], morph[0], morph[1]))
 
 db.commit();

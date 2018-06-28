@@ -9,7 +9,7 @@ import pymysql
 import datetime
 
 # config 파일 불러옴
-with open("config.yml", 'r') as ymlfile:
+with open('config.yml', 'r') as ymlfile:
     cfg = yaml.load(ymlfile)
 
 # 디비 연결
@@ -34,7 +34,7 @@ auth.set_access_token(access_token, access_token_secret)
 # twitter API 생성
 api = tweepy.API(auth, wait_on_rate_limit = True, wait_on_rate_limit_notify = True)
 
-wfile = open(os.getcwd()+"/user_text.txt", mode='w', encoding='utf8')    # 쓰기 모드
+wfile = open(os.getcwd()+'/user_text.txt', mode = 'w', encoding = 'utf8')    # 쓰기 모드
 
 array = []
 numberOfItems = 20  # 검색횟수 입력
@@ -51,7 +51,7 @@ if user == '':
 
 sqlInsert = 'INSERT INTO user_tweets (tweet_id, tweet_text, created_at, updated_at) VALUES (%s, %s, %s, %s)'
 
-cursor = tweepy.Cursor(api.user_timeline, screen_name=user, include_rts=False, count=numberOfItems).items()
+cursor = tweepy.Cursor(api.user_timeline, screen_name = user, include_rts = False, count = numberOfItems).items()
 # 트위터에서 크롤링
 try:
   for tweet in cursor:

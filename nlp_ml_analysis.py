@@ -168,6 +168,32 @@ for sorted_result_of_sentiment in sorted_result:
     result_file.write('점수 : ' + str(row[1]) + '\n')
 result_file.close()
 
+# 형태소 분석 DB 생성
+sqlCreate = 'CREATE TABLE IF NOT EXISTS morph (id bigint(20) NOT NULL AUTO_INCREMENT, sentiment int(4), morph varchar(300) PRIMARY KEY (id)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci'
+cur.execute(sqlCreate)
+sqlInsert = 'INSERT INTO morph (sentiment, morph) VALUES (%s, %s)'
+
+for index_of_sentiment in range(len(sentiments)):
+  for morph in list_of_morph:
+    db.cursor().execute(sqlInsert, (index_of_sentiment, similarity_dictionary[morph][index_of_sentiment]))
+
+db.commit()
+
+
+# 문장 랭킹 DB 생성
+sqlCreate = 'CREATE TABLE IF NOT EXISTS sentence_rank (id bigint(20) NOT NULL AUTO_INCREMENT, sentiment int(4), value float(8,7) PRIMARY KEY (id)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci'
+cur.execute(sqlCreate)
+sqlInsert = 'INSERT INTO morph (sentiment value) VALUES (%s, %s)'
+
+for index_of_sentiment in range(len(sentiments)):
+  rank = 0
+  for row in sorted_result[index_of_sentiment]:
+      rank+=1
+      db.cursor().execute(sqlInsert, (index_of_sentiment, row[1]))
+
+db.commit()
+
+
 
 # 결과 DB를 생성한다.
 #sqlCreate = 'CREATE TABLE IF NOT EXISTS results (id bigint(20) NOT NULL AUTO_INCREMENT, tweet_id int(11) DEFAULT NULL, tweet_text text COLLATE utf8mb4_unicode_ci, sentiment1 int(11) DEFAULT NULL, sentiment2 int(11) DEFAULT NULL, sentiment3 int(11) DEFAULT NULL, sentiment4 int(11) DEFAULT NULL, sentiment5 int(11) DEFAULT NULL, created_at datetime NOT NULL, updated_at datetime NOT NULL, PRIMARY KEY (id)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci'
@@ -234,15 +260,6 @@ for twit in result:
         #print("형태소 점수 합계 :", sum_of_feeling)
         #print("형태소 점수 평균 :", avrg)
         #print("총 문장 갯수 :", len(sorted_result[index_of_sentiment]))
-
-        rank = 0
-        for row in sorted_result[index_of_sentiment]:
-          rank += 1
-          if row[1] < value_of_sentence:
-            #print("등수 : " , rank)
-            break
-        #print(sentiments[index_of_sentiment], "백분율 :",(100 - int(rank / len(sorted_result[index_of_sentiment]) * 100)))
-        rank = 0
 
 
     if count > 0:

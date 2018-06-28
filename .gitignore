@@ -104,4 +104,8 @@ venv.bak/
 .mypy_cache/
 
 config.yml
+keyinfo.yml
+.DS_Store
+
+
 

@@ -49,6 +49,8 @@ for row in cur.fetchall():
   corpus.write('\n')
   arr.append(tmp)
 
+print("Word2Vec 모델 생성")
+
 sentences_vocab = arr
 sentences_train = arr
 

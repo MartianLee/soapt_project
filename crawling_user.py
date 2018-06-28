@@ -37,17 +37,19 @@ api = tweepy.API(auth, wait_on_rate_limit = True, wait_on_rate_limit_notify = Tr
 wfile = open(os.getcwd()+"/user_text.txt", mode='w', encoding='utf8')    # 쓰기 모드
 
 array = []
-numberOfItems = 10  # 검색횟수 입력
-user = '@shanarchist7'
+numberOfItems = 20  # 검색횟수 입력
+user = input()
+if user == '':
+  user = '@Martian_Lee'
 
 # 이전에 DB가 있으면 제거한다.
-sqlDrop = "DROP TABLE IF EXISTS user_text;"
-cur.execute(sqlDrop)
+#sqlDrop = "DROP TABLE IF EXISTS user_tweets;"
+#cur.execute(sqlDrop)
 # 분석용 DB를 생성한다.
-sqlCreate = "CREATE TABLE user_text ( id bigint(20) unsigned NOT NULL AUTO_INCREMENT, tweet_id bigint(40) unsigned NOT NULL, text VARCHAR(400) NOT NULL, created datetime, PRIMARY KEY (id) )  DEFAULT CHARSET=utf8mb4;"
-cur.execute(sqlCreate)
+#sqlCreate = "CREATE TABLE user_text ( id bigint(20) unsigned NOT NULL AUTO_INCREMENT, tweet_id bigint(40) unsigned NOT NULL, text VARCHAR(400) NOT NULL, created datetime, PRIMARY KEY (id) )  DEFAULT CHARSET=utf8mb4;"
+#cur.execute(sqlCreate)
 
-sqlInsert = 'INSERT INTO user_text (tweet_id, text, created) VALUES (%s, %s, %s)'
+sqlInsert = 'INSERT INTO user_tweets (tweet_id, tweet_text, created_at, updated_at) VALUES (%s, %s, %s, %s)'
 
 cursor = tweepy.Cursor(api.user_timeline, screen_name=user, include_rts=False, count=numberOfItems).items()
 # 트위터에서 크롤링
@@ -56,7 +58,7 @@ try:
     if 'https' in tweet.text or 'com' in tweet.text or '@' in tweet.text or '&' in tweet.text or 'domain' in tweet.text:
       continue
     print(tweet.text)
-    db.cursor().execute(sqlInsert, (tweet.id, tweet.text, tweet.created_at))
+    db.cursor().execute(sqlInsert, (tweet.id, tweet.text, tweet.created_at, tweet.created_at))
   db.commit()
 finally:
   db.close()
